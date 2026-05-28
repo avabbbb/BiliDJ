@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notion DJ Deck v2.0 - Theater Morphing</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: #FBFBFA;
+            color: #37352F;
+            transition: background-color 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+        }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Custom spring transitions */
+        .spring-transition {
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+        }
+        /* Theater mode dimming overlay */
+        .theater-dim {
+            background-color: #121212 !important;
+            color: #E3E2DE !important;
+        }
+        .notion-card {
+            background: #FFFFFF;
+            border: 1px solid #EAE9E6;
+            box-shadow: 0 1px 2px rgba(15, 15, 15, 0.05);
+            transition: background 0.4s ease, border-color 0.4s ease;
+        }
+        .theater-dim .notion-card {
+            background: #1E1E1E;
+            border-color: #2E2E2C;
+            color: #F1F0EC;
+        }
+        /* Webkit Scrollbar Customization */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #DFDEDE;
+            border-radius: 4px;
+        }
+        .theater-dim ::-webkit-scrollbar-thumb {
+            background: #4A4945;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex flex-col">
+
+    <!-- Top Action Bar simulating the live browser host area -->
+    <div id="top-nav" class="h-12 w-full bg-[#F1F0EC] border-b border-[#E3E2DE] flex items-center justify-between px-4 select-none shrink-0 z-50 spring-transition">
+        <div class="flex items-center space-x-2">
+            <div class="flex space-x-1.5">
+                <div class="w-3 h-3 rounded-full bg-[#FF5F56] border border-[#E0443E]"></div>
+                <div class="w-3 h-3 rounded-full bg-[#FFBD2E] border border-[#DEA123]"></div>
+                <div class="w-3 h-3 rounded-full bg-[#27C93F] border border-[#1AAB29]"></div>
+            </div>
+            <div class="h-6 w-px bg-[#DFDEDE] mx-2"></div>
+            <div class="flex items-center space-x-1 bg-white px-3 py-1 rounded-md text-xs text-[#6A6965] border border-[#EDECE9] min-w-[340px] shadow-sm">
+                <i class="fa-solid fa-earth-asia text-emerald-600 mr-2"></i>
+                <span class="truncate mono" id="browser-url">bilibili.com/video/BV1yd1lei_vocals</span>
+            </div>
+        </div>
+        <div class="flex items-center space-x-3">
+            <span class="bg-[#1DB954] text-black text-[10px] font-bold px-2 py-0.5 rounded mono tracking-widest animate-pulse">CUE CONTROL ENHANCED</span>
+            <span class="text-xs text-[#878682] mono">v2.0-Theater</span>
+        </div>
+    </div>
+
+    <!-- Hidden HTML5 audio elements for precision synchronized control -->
+    <audio id="left-vocal" loop src="https://actions.google.com/sounds/v1/science_fiction/alien_hum_continuous.ogg"></audio>
+    <audio id="right-beat" loop src="https://actions.google.com/sounds/v1/ambiences/morning_birds.ogg"></audio>
+
+    <!-- Main Interactive Container split into Host Content and DJ Panel -->
+    <div class="flex-1 w-full flex overflow-hidden relative">
+
+        <!-- HOST VIEWPORT (Left area that morphs dynamically) -->
+        <div id="host-viewport" class="flex-1 h-full bg-[#FBFBFA] flex flex-col p-6 spring-transition relative overflow-y-auto">
+            
+            <!-- Standard Bilibili Header Simulation (Hidden in Theater Mode) -->
+            <div id="bili-header" class="mb-4 spring-transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded font-medium mr-2">视频播放</span>
+                        <h1 class="text-lg font-bold inline-block text-[#111] align-middle">【一滴泪】纯人声切片干声 + 说唱二创对点器</h1>
+                    </div>
+                    <button id="activate-theater-btn" class="bg-black text-white hover:bg-zinc-800 text-xs px-3 py-2 rounded-md font-medium spring-transition flex items-center space-x-1.5 shadow-md hover:scale-105 active:scale-95">
+                        <i class="fa-solid fa-wand-magic-sparkles text-yellow-400"></i>
+                        <span>进入极简混音(Notion DJ)</span>
+                    </button>
+                </div>
+                <div class="text-xs text-[#878682] mt-1 flex items-center space-x-3">
+                    <span>UP主：一滴泪二创委员会</span>
+                    <span>•</span>
+                    <span>12.5万播放</span>
+                    <span>•</span>
+                    <span class="mono">2026-05-28 12:00</span>
+                </div>
+            </div>
+
+            <!-- Morphing Video Frame (Spreads out to Double Screen in Theater mode) -->
+            <div id="video-workspace" class="flex-1 flex flex-col md:flex-row items-center justify-center gap-6 min-h-0 spring-transition">
+                
+                <!-- Track 1: Vocal Screen (Left side or Full-screen initially) -->
+                <div id="vocal-screen-box" class="w-full h-full relative rounded-lg border border-[#EDECE9] bg-black overflow-hidden shadow-lg flex-1 spring-transition flex flex-col justify-between">
+                    <!-- Fake Video Overlay -->
+                    <div class="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded text-[10px] text-purple-400 font-bold tracking-wider uppercase z-20 mono">
+                        🎤 TRACK L: 一滴泪 (Vocal)
+                    </div>
+                    
+                    <!-- Simulating a visual player waveform & graphic -->
+                    <div class="flex-1 flex flex-col items-center justify-center p-6 relative">
+                        <div class="w-16 h-16 rounded-full border-2 border-dashed border-purple-500/40 flex items-center justify-center mb-3 text-2xl" id="vocal-icon">
+                            💧
+                        </div>
+                        <div class="text-center">
+                            <p class="text-white text-sm font-medium">一滴泪 - 极简干声音频源</p>
+                            <p class="text-neutral-500 text-xs mt-1 mono" id="vocal-time-display">00:00.0 / 01:30.0</p>
+                        </div>
+
+                        <!-- Reactive Visualizer Rings (Elastic Scale) -->
+                        <div id="vocal-wave-circle" class="absolute w-24 h-24 rounded-full border border-purple-500/30 scale-100 opacity-0 spring-transition pointer-events-none"></div>
+                        <div id="vocal-wave-circle-2" class="absolute w-36 h-36 rounded-full border border-purple-500/10 scale-100 opacity-0 spring-transition pointer-events-none"></div>
+                    </div>
+
+                    <!-- Custom Visual Timeline with Hotkey Notch Indicators -->
+                    <div class="h-10 bg-black/80 border-t border-neutral-900 px-3 flex items-center relative select-none">
+                        <span class="text-[9px] text-neutral-500 mono mr-2">L-CUES</span>
+                        <div class="flex-1 h-2 bg-neutral-800 rounded relative cursor-pointer" id="vocal-timeline-rail">
+                            <div id="vocal-progress-bar" class="absolute left-0 top-0 h-full bg-purple-500 rounded" style="width: 0%"></div>
+                            <!-- Live notch pins will dynamically generate here -->
+                            <div id="vocal-notches-container" class="absolute inset-0"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Track 2: Beat Screen (Only visible/expanded in Theater Mode) -->
+                <div id="beat-screen-box" class="w-0 h-0 opacity-0 relative rounded-lg border border-[#EDECE9] bg-black overflow-hidden shadow-lg spring-transition flex flex-col justify-between">
+                    <!-- Fake Video Overlay -->
+                    <div class="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded text-[10px] text-emerald-400 font-bold tracking-wider uppercase z-20 mono">
+                        🎹 TRACK R: 经典说唱伴奏 (Beat)
+                    </div>
+                    
+                    <!-- Beat Screen Core Interface -->
+                    <div class="flex-1 flex flex-col items-center justify-center p-6 relative">
+                        <div class="w-16 h-16 rounded-full border-2 border-dashed border-emerald-500/40 flex items-center justify-center mb-3 text-2xl" id="beat-icon">
+                            💿
+                        </div>
+                        <div class="text-center">
+                            <p class="text-white text-sm font-medium" id="beat-active-title">未选定伴奏 Beat</p>
+                            <p class="text-neutral-500 text-xs mt-1 mono" id="beat-time-display">00:00.0 / 02:40.0</p>
+                        </div>
+                    </div>
+
+                    <!-- Beat Timeline & Cues -->
+                    <div class="h-10 bg-black/80 border-t border-neutral-900 px-3 flex items-center relative select-none">
+                        <span class="text-[9px] text-neutral-500 mono mr-2">R-CUES</span>
+                        <div class="flex-1 h-2 bg-neutral-800 rounded relative cursor-pointer" id="beat-timeline-rail">
+                            <div id="beat-progress-bar" class="absolute left-0 top-0 h-full bg-emerald-500 rounded" style="width: 0%"></div>
+                            <!-- Live notch pins -->
+                            <div id="beat-notches-container" class="absolute inset-0"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Fake Comment stream simulating standard Bilibili footer -->
+            <div id="bili-footer-comments" class="mt-6 border-t border-[#EDECE9] pt-4 spring-transition">
+                <h3 class="text-sm font-semibold mb-3">评论区 (238)</h3>
+                <div class="space-y-3">
+                    <div class="flex space-x-2.5 text-xs text-neutral-600">
+                        <div class="w-7 h-7 rounded-full bg-pink-200 shrink-0"></div>
+                        <div>
+                            <p class="font-medium text-black">一滴泪忠实粉丝 <span class="text-[10px] bg-red-100 text-red-600 px-1 rounded">LV.5</span></p>
+                            <p class="mt-0.5 text-[#37352F]">跪求把这个干声配上经典的 90s BoomBap 伴奏！简直是绝配！</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- NOTION DJ SIDE PANEL (Slides in elastically from right) -->
+        <div id="notion-sidebar" class="w-0 opacity-0 h-full bg-[#FBFBFA] border-l border-[#EDECE9] flex flex-col select-none shrink-0 spring-transition overflow-y-auto">
+            
+            <!-- Side Panel Header with Exit Button -->
+            <div class="p-5 border-b border-[#EDECE9] flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <span class="text-lg">🎚️</span>
+                    <div>
+                        <h2 class="text-sm font-semibold tracking-tight">Notion DJ Console</h2>
+                        <p class="text-[10px] text-neutral-400 uppercase tracking-widest font-semibold mono">Interactive Workspace</p>
+                    </div>
+                </div>
+                <button id="exit-theater-btn" class="h-7 w-7 rounded-md border border-[#EDECE9] hover:bg-neutral-100 text-neutral-600 flex items-center justify-center transition-transform hover:scale-105 active:scale-95">
+                    <i class="fa-solid fa-xmark text-xs"></i>
+                </button>
+            </div>
+
+            <!-- Sync Master Fader Controls -->
+            <div class="p-5 border-b border-[#EDECE9] space-y-4">
+                <span class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mono">🎚️ Mix Master Crossfader</span>
+                <div class="space-y-1">
+                    <div class="flex justify-between text-[11px] text-neutral-500 mono">
+                        <span>L - Vocal</span>
+                        <span class="font-bold text-black" id="crossfade-status">CENTER</span>
+                        <span>R - Beat</span>
+                    </div>
+                    <div class="relative w-full h-6 flex items-center">
+                        <input id="crossfader" type="range" min="-100" max="100" value="0" class="w-full h-1 bg-[#EDECE9] rounded appearance-none cursor-pointer accent-black">
+                    </div>
+                </div>
+
+                <!-- Combined Action Buttons -->
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="global-play-btn" class="py-1.5 bg-black hover:bg-neutral-800 text-white font-medium text-xs rounded shadow-sm spring-transition flex items-center justify-center space-x-1.5">
+                        <i class="fa-solid fa-play"></i> <span class="mono">PLAY ALL</span>
+                    </button>
+                    <button id="bpm-sync-btn" class="py-1.5 bg-white border border-[#EDECE9] text-black font-semibold text-xs rounded shadow-xs hover:bg-neutral-50 spring-transition flex items-center justify-center space-x-1">
+                        <i class="fa-solid fa-arrows-spin text-purple-600"></i> <span class="mono">BPM SYNC</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Notion Table Style Beat Loader -->
+            <div class="p-5 border-b border-[#EDECE9] space-y-3">
+                <span class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mono">🎵 Preset Beat Library</span>
+                
+                <div class="border border-[#EDECE9] rounded overflow-hidden text-xs bg-white">
+                    <div class="grid grid-cols-12 bg-[#F7F6F3] border-b border-[#EDECE9] p-1.5 text-[9px] font-bold text-neutral-400 uppercase mono">
+                        <div class="col-span-8 px-2">Track Title</div>
+                        <div class="col-span-4 text-right px-2">BPM / Style</div>
+                    </div>
+                    <div class="divide-y divide-[#EDECE9]">
+                        <div class="grid grid-cols-12 p-2 hover:bg-[#F7F6F3] cursor-pointer transition-colors duration-150 beat-row" data-beat-url="https://actions.google.com/sounds/v1/ambiences/ambient_hum_air_conditioner.ogg" data-bpm="90" data-title="Deep Midnight R&B">
+                            <div class="col-span-8 flex items-center space-x-1.5 px-2">
+                                <i class="fa-solid fa-circle-play text-neutral-400"></i>
+                                <span class="font-medium truncate">Deep Midnight R&B</span>
+                            </div>
+                            <div class="col-span-4 text-right px-2 mono text-purple-600 font-medium">90 • R&B</div>
+                        </div>
+                        <div class="grid grid-cols-12 p-2 hover:bg-[#F7F6F3] cursor-pointer transition-colors duration-150 beat-row" data-beat-url="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg" data-bpm="85" data-title="90s BoomBap Classic">
+                            <div class="col-span-8 flex items-center space-x-1.5 px-2">
+                                <i class="fa-solid fa-circle-play text-neutral-400"></i>
+                                <span class="font-medium truncate">90s BoomBap Classic</span>
+                            </div>
+                            <div class="col-span-4 text-right px-2 mono text-amber-600 font-medium">85 • Bap</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- YouTube-style Hotkey Customizable Registry Section -->
+            <div class="p-5 space-y-3 flex-1">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mono">⌨️ Custom Jitter Cue Keys</span>
+                    <button id="add-cue-btn" class="text-[9px] bg-neutral-100 hover:bg-neutral-200 px-1.5 py-0.5 rounded font-medium text-neutral-700 flex items-center space-x-1">
+                        <i class="fa-solid fa-plus"></i> <span>Add New</span>
+                    </button>
+                </div>
+
+                <!-- Custom Cue Points Notion List -->
+                <div class="space-y-2 max-h-60 overflow-y-auto" id="cue-points-list">
+                    <!-- Dynamic Rows representing key mapping -->
+                    <!-- Loaded dynamically via JavaScript for real reactivity -->
+                </div>
+            </div>
+
+            <!-- Sticky Custom Cue Injector Form (Revealed on 'Add New') -->
+            <div id="cue-editor" class="hidden p-4 bg-neutral-50 border-t border-[#EDECE9] space-y-2.5">
+                <span class="text-[10px] font-bold text-neutral-500 block mono">🛠️ Configure Custom Target Cue</span>
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="text-[9px] text-neutral-400 block mb-0.5">Press Key</label>
+                        <input id="editor-key" type="text" maxlength="1" placeholder="e.g. Q" class="w-full text-xs bg-white border border-[#EDECE9] rounded px-2 py-1 uppercase font-semibold text-center outline-none focus:border-black">
+                    </div>
+                    <div>
+                        <label class="text-[9px] text-neutral-400 block mb-0.5">Target Track</label>
+                        <select id="editor-track" class="w-full text-xs bg-white border border-[#EDECE9] rounded px-1.5 py-1 outline-none focus:border-black">
+                            <option value="L">L (Vocal)</option>
+                            <option value="R">R (Beat)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[9px] text-neutral-400 block mb-0.5">Time (Sec)</label>
+                        <input id="editor-time" type="number" min="0" max="150" placeholder="e.g. 15" class="w-full text-xs bg-white border border-[#EDECE9] rounded px-2 py-1 outline-none focus:border-black mono">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-2 pt-1">
+                    <button id="cancel-cue-btn" class="px-2.5 py-1 text-[10px] bg-white border border-[#EDECE9] rounded text-neutral-600">Cancel</button>
+                    <button id="save-cue-btn" class="px-2.5 py-1 text-[10px] bg-black text-white rounded font-medium">Add Keybinding</button>
+                </div>
+            </div>
+
+            <!-- Key Cheat Sheet -->
+            <div class="p-4 bg-[#F7F6F3] border-t border-[#EDECE9]">
+                <span class="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mono mb-1">PRO-TIPS</span>
+                <p class="text-[10px] text-neutral-500 leading-relaxed">
+                    在开启 “Notion DJ 模式” 下，按下键盘上绑定的按键（支持 0-9 数字键或任意自定义按键），视频/音频会瞬时产生**弹性切片式跳转**。快进/快退请使用 <kbd class="bg-white px-1 rounded border">A</kbd>/<kbd class="bg-white px-1 rounded border">D</kbd>。
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // DOM Elements
+        const body = document.body;
+        const hostViewport = document.getElementById('host-viewport');
+        const notionSidebar = document.getElementById('notion-sidebar');
+        const biliHeader = document.getElementById('bili-header');
+        const biliFooterComments = document.getElementById('bili-footer-comments');
+        const browserUrl = document.getElementById('browser-url');
+        const topNav = document.getElementById('top-nav');
+
+        const leftVocal = document.getElementById('left-vocal');
+        const rightBeat = document.getElementById('right-beat');
+
+        const activateTheaterBtn = document.getElementById('activate-theater-btn');
+        const exitTheaterBtn = document.getElementById('exit-theater-btn');
+        const vocalScreenBox = document.getElementById('vocal-screen-box');
+        const beatScreenBox = document.getElementById('beat-screen-box');
+        const beatActiveTitle = document.getElementById('beat-active-title');
+
+        const crossfader = document.getElementById('crossfader');
+        const crossfadeStatus = document.getElementById('crossfade-status');
+        const globalPlayBtn = document.getElementById('global-play-btn');
+        const bpmSyncBtn = document.getElementById('bpm-sync-btn');
+
+        const vocalTimeDisplay = document.getElementById('vocal-time-display');
+        const beatTimeDisplay = document.getElementById('beat-time-display');
+        const vocalProgressBar = document.getElementById('vocal-progress-bar');
+        const beatProgressBar = document.getElementById('beat-progress-bar');
+
+        const vocalWaveCircle = document.getElementById('vocal-wave-circle');
+        const vocalWaveCircle2 = document.getElementById('vocal-wave-circle-2');
+
+        const cuePointsList = document.getElementById('cue-points-list');
+        const addCueBtn = document.getElementById('add-cue-btn');
+        const cueEditor = document.getElementById('cue-editor');
+        const saveCueBtn = document.getElementById('save-cue-btn');
+        const cancelCueBtn = document.getElementById('cancel-cue-btn');
+        const editorKey = document.getElementById('editor-key');
+        const editorTrack = document.getElementById('editor-track');
+        const editorTime = document.getElementById('editor-time');
+
+        const vocalNotchesContainer = document.getElementById('vocal-notches-container');
+        const beatNotchesContainer = document.getElementById('beat-notches-container');
+
+        // State Machine
+        let isTheaterMode = false;
+        let isPlaying = false;
+        
+        // Custom Cue Configuration (YouTube style, customizable)
+        let customCues = [
+            { key: '1', track: 'L', time: 0, label: 'Vocal Start' },
+            { key: '2', track: 'L', time: 15, label: 'Drop Kick' },
+            { key: '3', track: 'L', time: 45, label: 'Chorus Verse' },
+            { key: '0', track: 'R', time: 0, label: 'Beat Intro' },
+            { key: 'Q', track: 'R', time: 20, label: 'Heavy Drum' },
+        ];
+
+        // Custom Notification Handler
+        function triggerPulseToast(message, color = 'purple') {
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-6 right-6 z-50 px-4 py-2 rounded-lg border text-xs shadow-lg flex items-center space-x-2 transition-all duration-400 transform translate-y-4 opacity-0 mono ${
+                color === 'purple' ? 'bg-purple-950 border-purple-800 text-purple-200' : 'bg-neutral-900 border-neutral-700 text-neutral-100'
+            }`;
+            toast.innerHTML = `<i class="fa-solid fa-bolt text-yellow-400 animate-bounce"></i> <span>${message}</span>`;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-4', 'opacity-0');
+            }, 30);
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-4', 'opacity-0');
+                setTimeout(() => toast.remove(), 400);
+            }, 2000);
+        }
+
+        // Render timeline notch representations (Visual cues)
+        function renderTimelineNotches() {
+            // Clear existing notches
+            vocalNotchesContainer.innerHTML = '';
+            beatNotchesContainer.innerHTML = '';
+
+            const vocalDuration = leftVocal.duration || 90; // Fallback to 90s
+            const beatDuration = rightBeat.duration || 160; // Fallback to 160s
+
+            customCues.forEach(cue => {
+                const notch = document.createElement('div');
+                notch.className = `absolute top-0 bottom-0 w-1 ${cue.track === 'L' ? 'bg-purple-400' : 'bg-emerald-400'} group cursor-pointer`;
+                notch.title = `Cue [${cue.key.toUpperCase()}]: ${cue.label || cue.time + 's'}`;
+                
+                const percentage = (cue.time / (cue.track === 'L' ? vocalDuration : beatDuration)) * 100;
+                notch.style.left = `${Math.min(100, Math.max(0, percentage))}%`;
+
+                // Quick jump on notch click
+                notch.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    jumpToCue(cue);
+                });
+
+                if (cue.track === 'L') {
+                    vocalNotchesContainer.appendChild(notch);
+                } else {
+                    beatNotchesContainer.appendChild(notch);
+                }
+            });
+        }
+
+        // Activate DJ Workspace (The Morphic Splitscreen Shift)
+        function enterTheaterMode() {
+            isTheaterMode = true;
+            body.classList.add('theater-dim');
+            topNav.classList.add('bg-[#1E1E1E]', 'border-[#2E2E2C]');
+            browserUrl.classList.add('bg-neutral-900', 'border-neutral-800', 'text-neutral-400');
+
+            // Hide normal host components
+            biliHeader.classList.add('opacity-0', 'scale-95', 'pointer-events-none', 'h-0', 'mb-0');
+            biliFooterComments.classList.add('opacity-0', 'scale-95', 'pointer-events-none', 'h-0', 'mt-0');
+
+            // Trigger Elastic Window split expansion
+            vocalScreenBox.classList.add('w-1/2');
+            
+            // Expand second Beat frame elastically
+            beatScreenBox.classList.remove('w-0', 'h-0', 'opacity-0');
+            beatScreenBox.classList.add('w-1/2', 'h-full', 'opacity-100');
+
+            // Slide in the Notion DJ Sidebar elastically
+            notionSidebar.classList.remove('w-0', 'opacity-0');
+            notionSidebar.classList.add('w-[360px]', 'opacity-100', 'p-0');
+
+            triggerPulseToast("🎭 极简双轨工作台加载成功 - 已剔除冗余干扰");
+            setTimeout(renderTimelineNotches, 600);
+        }
+
+        function exitTheaterMode() {
+            isTheaterMode = false;
+            body.classList.remove('theater-dim');
+            topNav.classList.remove('bg-[#1E1E1E]', 'border-[#2E2E2C]');
+            browserUrl.classList.remove('bg-neutral-900', 'border-neutral-800', 'text-neutral-400');
+
+            // Reveal original page components
+            biliHeader.classList.remove('opacity-0', 'scale-95', 'pointer-events-none', 'h-0', 'mb-0');
+            biliFooterComments.classList.remove('opacity-0', 'scale-95', 'pointer-events-none', 'h-0', 'mt-0');
+
+            // Collapse back to unified screen
+            vocalScreenBox.classList.remove('w-1/2');
+            
+            beatScreenBox.classList.add('w-0', 'h-0', 'opacity-0');
+            beatScreenBox.classList.remove('w-1/2', 'h-full', 'opacity-100');
+
+            notionSidebar.classList.add('w-0', 'opacity-0');
+            notionSidebar.classList.remove('w-[360px]', 'opacity-100');
+            
+            if (isPlaying) {
+                toggleGlobalPlay();
+            }
+        }
+
+        // Bind Switch Actions
+        activateTheaterBtn.addEventListener('click', enterTheaterMode);
+        exitTheaterBtn.addEventListener('click', exitTheaterMode);
+
+        // Play / Pause Synchronized Core loop
+        function toggleGlobalPlay() {
+            isPlaying = !isPlaying;
+            if (isPlaying) {
+                leftVocal.play().catch(e => console.log("Audio deferred awaiting gesture"));
+                rightBeat.play().catch(e => console.log("Audio deferred awaiting gesture"));
+                globalPlayBtn.innerHTML = `<i class="fa-solid fa-pause text-red-500"></i> <span class="mono">PAUSE ALL</span>`;
+                globalPlayBtn.classList.replace('bg-black', 'bg-neutral-800');
+            } else {
+                leftVocal.pause();
+                rightBeat.pause();
+                globalPlayBtn.innerHTML = `<i class="fa-solid fa-play"></i> <span class="mono">PLAY ALL</span>`;
+                globalPlayBtn.classList.replace('bg-neutral-800', 'bg-black');
+            }
+        }
+
+        globalPlayBtn.addEventListener('click', toggleGlobalPlay);
+
+        // Synchronize BPM speeds
+        bpmSyncBtn.addEventListener('click', () => {
+            // Automatically sync beat rate to vocal (Perfect alignment)
+            rightBeat.playbackRate = leftVocal.playbackRate;
+            
+            // Physical bounce flash on the workspace screen frames
+            vocalScreenBox.style.transform = "scale(0.97)";
+            beatScreenBox.style.transform = "scale(0.97)";
+            setTimeout(() => {
+                vocalScreenBox.style.transform = "scale(1)";
+                beatScreenBox.style.transform = "scale(1)";
+            }, 180);
+
+            triggerPulseToast("⚡ 双轨速度完美卡点对齐！", "emerald");
+        });
+
+        // Crossfader Volume Mixer
+        crossfader.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            if (val === 0) {
+                crossfadeStatus.textContent = "CENTER";
+                leftVocal.volume = 1.0;
+                rightBeat.volume = 1.0;
+            } else if (val < 0) {
+                // Lean Left: Full vocal, fade beat
+                crossfadeStatus.textContent = `VOCAL ${Math.abs(val)}%`;
+                leftVocal.volume = 1.0;
+                rightBeat.volume = (100 - Math.abs(val)) / 100;
+            } else {
+                // Lean Right: Full beat, fade vocal
+                crossfadeStatus.textContent = `BEAT ${val}%`;
+                leftVocal.volume = (100 - val) / 100;
+                rightBeat.volume = 1.0;
+            }
+        });
+
+        // Global continuous frames updater for precision progress visualization
+        function updateTimelines() {
+            // Vocal Timeline
+            const vCurrent = leftVocal.currentTime;
+            const vDuration = leftVocal.duration || 90;
+            const vPercent = (vCurrent / vDuration) * 100;
+            vocalProgressBar.style.width = `${vPercent}%`;
+            
+            const vMin = Math.floor(vCurrent / 60).toString().padStart(2, '0');
+            const vSec = (vCurrent % 60).toFixed(1).padStart(4, '0');
+            const vdMin = Math.floor(vDuration / 60).toString().padStart(2, '0');
+            const vdSec = (vDuration % 60).toFixed(1).padStart(4, '0');
+            vocalTimeDisplay.textContent = `${vMin}:${vSec} / ${vdMin}:${vdSec}`;
+
+            // Beat Timeline
+            const bCurrent = rightBeat.currentTime;
+            const bDuration = rightBeat.duration || 160;
+            const bPercent = (bCurrent / bDuration) * 100;
+            beatProgressBar.style.width = `${bPercent}%`;
+            
+            const bMin = Math.floor(bCurrent / 60).toString().padStart(2, '0');
+            const bSec = (bCurrent % 60).toFixed(1).padStart(4, '0');
+            const bdMin = Math.floor(bDuration / 60).toString().padStart(2, '0');
+            const bdSec = (bDuration % 60).toFixed(1).padStart(4, '0');
+            beatTimeDisplay.textContent = `${bMin}:${bSec} / ${bdMin}:${bdSec}`;
+
+            // Sync visual waveform pulses if playing
+            if (isPlaying) {
+                const pulseScale = 1 + (Math.sin(Date.now() / 80) * 0.12);
+                vocalWaveCircle.style.transform = `scale(${pulseScale})`;
+                vocalWaveCircle.style.opacity = "0.35";
+                
+                vocalWaveCircle2.style.transform = `scale(${pulseScale * 1.3})`;
+                vocalWaveCircle2.style.opacity = "0.15";
+            } else {
+                vocalWaveCircle.style.opacity = "0";
+                vocalWaveCircle2.style.opacity = "0";
+            }
+
+            requestAnimationFrame(updateTimelines);
+        }
+
+        window.onload = function() {
+            updateTimelines();
+            renderCueRegistry();
+            renderTimelineNotches();
+        };
+
+        // Custom Cue Jitter execution logic
+        function jumpToCue(cue) {
+            const targetTrack = cue.track === 'L' ? leftVocal : rightBeat;
+            const screenFrame = cue.track === 'L' ? vocalScreenBox : beatScreenBox;
+            
+            // Apply immediate precision jumps
+            targetTrack.currentTime = cue.time;
+
+            // Physical spring jump flash effect
+            screenFrame.style.transform = "scale(0.93) rotate(-1deg)";
+            screenFrame.style.borderColor = cue.track === 'L' ? '#A855F7' : '#10B981';
+            
+            setTimeout(() => {
+                screenFrame.style.transform = "scale(1.02) rotate(1deg)";
+                setTimeout(() => {
+                    screenFrame.style.transform = "scale(1) rotate(0deg)";
+                    screenFrame.style.borderColor = "#EDECE9";
+                }, 150);
+            }, 100);
+
+            triggerPulseToast(`🚀 Cue 点触发 [${cue.key.toUpperCase()}]: 跳转至 ${cue.time}s`, cue.track === 'L' ? 'purple' : 'neutral');
+        }
+
+        // Render Custom Cue point rows dynamically (Notion-style Table row layout)
+        function renderCueRegistry() {
+            cuePointsList.innerHTML = '';
+            
+            customCues.forEach((cue, index) => {
+                const row = document.createElement('div');
+                row.className = "notion-card p-2.5 rounded-lg flex items-center justify-between hover:bg-neutral-50 hover:border-black/25 transition-all duration-200";
+                row.innerHTML = `
+                    <div class="flex items-center space-x-2.5">
+                        <span class="bg-neutral-100 text-neutral-800 border border-neutral-200 font-bold px-2 py-0.5 rounded text-xs mono uppercase shadow-xs">${cue.key}</span>
+                        <div>
+                            <div class="text-xs font-semibold text-neutral-800">${cue.label || 'Unnamed Cue'}</div>
+                            <div class="text-[10px] text-neutral-400 mono">Track ${cue.track} • Target: ${cue.time}s</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-1.5">
+                        <button class="cue-trigger-btn text-xs text-purple-600 hover:text-purple-700 px-2 py-0.5 rounded bg-purple-50 hover:bg-purple-100" data-index="${index}">
+                            Jump
+                        </button>
+                        <button class="cue-delete-btn text-xs text-neutral-400 hover:text-red-500 p-1" data-index="${index}">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                `;
+
+                // Handle Inline triggers
+                row.querySelector('.cue-trigger-btn').addEventListener('click', () => {
+                    jumpToCue(cue);
+                });
+
+                row.querySelector('.cue-delete-btn').addEventListener('click', () => {
+                    customCues.splice(index, 1);
+                    renderCueRegistry();
+                    renderTimelineNotches();
+                    triggerPulseToast("🗑️ 快捷键已注销");
+                });
+
+                cuePointsList.appendChild(row);
+            });
+        }
+
+        // Custom Cue Creator actions
+        addCueBtn.addEventListener('click', () => {
+            cueEditor.classList.remove('hidden');
+            editorKey.focus();
+        });
+
+        cancelCueBtn.addEventListener('click', () => {
+            cueEditor.classList.add('hidden');
+            clearEditor();
+        });
+
+        function clearEditor() {
+            editorKey.value = '';
+            editorTime.value = '';
+        }
+
+        saveCueBtn.addEventListener('click', () => {
+            const key = editorKey.value.trim().toUpperCase();
+            const track = editorTrack.value;
+            const time = parseFloat(editorTime.value);
+
+            if (!key || isNaN(time)) {
+                triggerPulseToast("⚠️ 请确保按键和时间参数输入正确！", "neutral");
+                return;
+            }
+
+            // Check duplicate key
+            const existingIndex = customCues.findIndex(c => c.key === key);
+            if (existingIndex !== -1) {
+                // Override
+                customCues[existingIndex] = { key, track, time, label: `Custom Cue (${track})` };
+            } else {
+                customCues.push({ key, track, time, label: `Custom Cue (${track})` });
+            }
+
+            cueEditor.classList.add('hidden');
+            clearEditor();
+            renderCueRegistry();
+            renderTimelineNotches();
+            triggerPulseToast(`Successfully bound Key "${key}"!`);
+        });
+
+        // Custom preset table selector
+        const beatRows = document.querySelectorAll('.beat-row');
+        beatRows.forEach(row => {
+            row.addEventListener('click', () => {
+                beatRows.forEach(r => r.classList.remove('bg-emerald-50', 'border-emerald-200'));
+                row.classList.add('bg-emerald-50', 'border-emerald-200');
+
+                const url = row.getAttribute('data-beat-url');
+                const title = row.getAttribute('data-title');
+                
+                rightBeat.src = url;
+                beatActiveTitle.textContent = title;
+                
+                if (isPlaying) {
+                    rightBeat.play().then(() => {
+                        rightBeat.playbackRate = leftVocal.playbackRate;
+                    });
+                }
+                triggerPulseToast(`Loaded Beat: ${title}`, "emerald");
+                setTimeout(renderTimelineNotches, 500);
+            });
+        });
+
+        // Allow manual click and seek directly on Left/Right tracks
+        document.getElementById('vocal-timeline-rail').addEventListener('click', (e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const clickPercent = (e.clientX - rect.left) / rect.width;
+            leftVocal.currentTime = clickPercent * (leftVocal.duration || 90);
+        });
+
+        document.getElementById('beat-timeline-rail').addEventListener('click', (e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const clickPercent = (e.clientX - rect.left) / rect.width;
+            rightBeat.currentTime = clickPercent * (rightBeat.duration || 160);
+        });
+
+        // Global document event listener to handle high priority hotkey triggers
+        window.addEventListener('keydown', (e) => {
+            // Bypass trigger if user is active in an input field (avoid interrupting text input)
+            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'SELECT') {
+                return;
+            }
+
+            const pressedKey = e.key.toUpperCase();
+
+            // Check if key is registered in custom cue system
+            const matchedCue = customCues.find(c => c.key === pressedKey);
+            if (matchedCue) {
+                e.preventDefault();
+                jumpToCue(matchedCue);
+                return;
+            }
+
+            // Default Action Controls
+            switch(e.code) {
+                case 'Space':
+                    e.preventDefault();
+                    toggleGlobalPlay();
+                    break;
+                case 'KeyA':
+                    e.preventDefault();
+                    // Rewind Vocal 2 seconds
+                    leftVocal.currentTime = Math.max(0, leftVocal.currentTime - 2);
+                    triggerPulseToast("⏪ 人声回退 2s", "neutral");
+                    break;
+                case 'KeyD':
+                    e.preventDefault();
+                    // Fastforward Vocal 2 seconds
+                    leftVocal.currentTime = Math.min(leftVocal.duration, leftVocal.currentTime + 2);
+                    triggerPulseToast("⏩ 人声快进 2s", "neutral");
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    // Rewind Beat 2 seconds
+                    rightBeat.currentTime = Math.max(0, rightBeat.currentTime - 2);
+                    triggerPulseToast("⏪ 伴奏回退 2s", "neutral");
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    // Fastforward Beat 2 seconds
+                    rightBeat.currentTime = Math.min(rightBeat.duration, rightBeat.currentTime + 2);
+                    triggerPulseToast("⏩ 伴奏快进 2s", "neutral");
+                    break;
+            }
+        });
+    </script>
+</body>
+</html>
