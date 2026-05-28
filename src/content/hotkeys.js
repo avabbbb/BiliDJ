@@ -34,10 +34,6 @@
         state.actions.toast('左轨快进 2 秒');
         return;
       }
-      if (event.code === 'ArrowLeft' || event.code === 'ArrowRight') {
-        event.preventDefault();
-        state.actions.toast('右轨当前是 B站嵌入可视轨，暂不支持可靠 seek 控制');
-      }
     }
     window.addEventListener('keydown', onKeydown, true);
     return () => window.removeEventListener('keydown', onKeydown, true);

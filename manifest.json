@@ -20,9 +20,7 @@
   },
   "permissions": ["storage"],
   "host_permissions": [
-    "https://www.bilibili.com/*",
-    "https://search.bilibili.com/*",
-    "https://player.bilibili.com/*"
+    "https://www.bilibili.com/video/*"
   ],
   "content_scripts": [
     {

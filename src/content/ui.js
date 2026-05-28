@@ -7,7 +7,7 @@
     const button = document.createElement('button');
     button.id = BUTTON_ID;
     button.type = 'button';
-    button.textContent = '进入 BiliDJ';
+    button.textContent = '给这个视频配伴奏';
     button.addEventListener('click', onOpen);
     document.documentElement.appendChild(button);
   }
@@ -17,12 +17,12 @@
     const root = document.createElement('div');
     root.id = ROOT_ID;
     root.innerHTML = `
-      <div class="bilidj-shell" role="dialog" aria-modal="true" aria-label="BiliDJ 简单混音助手">
+      <div class="bilidj-shell" role="dialog" aria-modal="true" aria-label="给视频配伴奏工具">
         <header class="bilidj-header">
           <div>
             <div class="bilidj-eyebrow">简单模式 / 三步完成</div>
-            <h2>把这个视频配上一段伴奏</h2>
-            <p class="bilidj-subtitle">不用懂 DJ：先选伴奏，再记住精彩位置，最后按键跳过去。</p>
+            <h2>给这个视频配一段伴奏</h2>
+            <p class="bilidj-subtitle">先选伴奏，再记住精彩位置，最后按键跳过去。用完点右上角退出。</p>
           </div>
           <div class="bilidj-header-actions">
             <span class="bilidj-status" data-role="status">当前视频已准备好</span>
@@ -43,7 +43,7 @@
             <div class="bilidj-video-slot bilidj-beat-slot" data-role="beat-slot">
               <div class="bilidj-empty">
                 <strong>第二步：选择一个伴奏</strong>
-                <p>在右侧输入关键词搜索，或者直接粘贴 B站 BV号/链接。这里会显示伴奏视频。</p>
+                <p>在右侧输入关键词搜索，或者直接粘贴伴奏视频的网址。这里会显示伴奏视频。</p>
               </div>
             </div>
             <div class="bilidj-timeline bilidj-disabled"><div></div><div data-role="right-cues"></div></div>
@@ -56,13 +56,31 @@
             <div class="bilidj-card-title">先看这里</div>
             <ol class="bilidj-steps">
               <li><strong>第一步</strong><span>左边视频已经自动放好了。</span></li>
-              <li><strong>第二步</strong><span>搜索或粘贴一个伴奏，放到右边。</span></li>
+              <li><strong>第二步</strong><span>搜索或粘贴一个伴奏视频网址，放到右边。</span></li>
               <li><strong>第三步</strong><span>给喜欢的位置设置按键，比如按 1 跳到 10 秒。</span></li>
+              <li><strong>完成后</strong><span>点右上角“退出并回到 B站”。</span></li>
             </ol>
           </section>
 
+          <section class="bilidj-card">
+            <div class="bilidj-card-title">第二步：找伴奏</div>
+            <label class="bilidj-field-label" for="bilidj-beat-input">输入想找的伴奏，或者粘贴伴奏视频的网址</label>
+            <div class="bilidj-search-row">
+              <input id="bilidj-beat-input" type="text" data-role="beat-input" placeholder="例如：爵士说唱伴奏 / https://www.bilibili.com/video/..." aria-describedby="bilidj-beat-help" />
+              <button type="button" class="bilidj-secondary" data-action="search-beat">帮我找</button>
+            </div>
+            <p id="bilidj-beat-help" class="bilidj-hint">输入关键词会打开 B站搜索；如果你知道 BV 号，也可以直接粘贴。</p>
+            <div class="bilidj-chip-row" aria-label="常用伴奏搜索词">
+              <button type="button" data-search="一滴泪 boom bap beat">Boom Bap</button>
+              <button type="button" data-search="爵士说唱 beat instrumental">爵士说唱</button>
+              <button type="button" data-search="R&B beat instrumental">R&B</button>
+              <button type="button" data-search="经典说唱伴奏 beat">经典说唱</button>
+            </div>
+            <div class="bilidj-result" data-role="beat-result" aria-live="polite"></div>
+          </section>
+
           <section class="bilidj-card bilidj-master">
-            <div class="bilidj-card-title">播放控制</div>
+            <div class="bilidj-card-title">可选：播放控制</div>
             <div class="bilidj-control-grid">
               <button class="bilidj-primary" type="button" data-action="toggle-play">播放 / 暂停左边视频</button>
               <button class="bilidj-secondary" type="button" data-action="mark-current">把现在的位置记成快捷键</button>
@@ -74,23 +92,6 @@
             </div>
           </section>
 
-          <section class="bilidj-card">
-            <div class="bilidj-card-title">第二步：找伴奏</div>
-            <label class="bilidj-field-label" for="bilidj-beat-input">输入想找的伴奏，或者粘贴 BV号/链接</label>
-            <div class="bilidj-search-row">
-              <input id="bilidj-beat-input" type="text" data-role="beat-input" placeholder="例如：爵士说唱伴奏 / BVxxxx" aria-describedby="bilidj-beat-help" />
-              <button type="button" class="bilidj-secondary" data-action="search-beat">帮我找</button>
-            </div>
-            <p id="bilidj-beat-help" class="bilidj-hint">输入关键词会打开 B站搜索；粘贴 BV号会直接放到右边。</p>
-            <div class="bilidj-chip-row" aria-label="常用伴奏搜索词">
-              <button type="button" data-search="一滴泪 boom bap beat">Boom Bap</button>
-              <button type="button" data-search="爵士说唱 beat instrumental">爵士说唱</button>
-              <button type="button" data-search="R&B beat instrumental">R&B</button>
-              <button type="button" data-search="经典说唱伴奏 beat">经典说唱</button>
-            </div>
-            <div class="bilidj-result" data-role="beat-result" aria-live="polite"></div>
-          </section>
-
           <section class="bilidj-card bilidj-cues">
             <div class="bilidj-card-title-row">
               <div class="bilidj-card-title">第三步：设置一键跳转</div>
@@ -99,7 +100,7 @@
             <p class="bilidj-hint">例子：设置 “1 → 左边视频 → 10秒”，以后按 1 就会跳到 10 秒。</p>
             <div class="bilidj-cue-form" data-role="cue-form" hidden>
               <label><span>按键</span><input maxlength="1" data-role="cue-key" placeholder="1" aria-label="快捷键" /></label>
-              <label><span>控制</span><select data-role="cue-track" aria-label="控制哪个视频"><option value="L">左边</option><option value="R">右边</option></select></label>
+              <label><span>控制</span><select data-role="cue-track" aria-label="控制哪个视频"><option value="L">左边视频</option></select></label>
               <label><span>秒数</span><input type="number" min="0" step="0.1" data-role="cue-time" placeholder="10" aria-label="跳到第几秒" /></label>
               <label><span>名字</span><input data-role="cue-label" placeholder="副歌开始" aria-label="快捷键名称" /></label>
               <button type="button" class="bilidj-primary" data-action="save-cue">保存</button>
@@ -181,7 +182,7 @@
     const parsed = globalThis.BiliDJBeat.normalizeInput(input);
     const result = root.querySelector('[data-role="beat-result"]');
     if (!parsed) {
-      state.actions.toast('请先输入想找的伴奏，或者粘贴一个 BV号');
+      state.actions.toast('请先输入想找的伴奏，或者粘贴一个伴奏视频网址');
       return;
     }
     if (parsed.bvid) {
@@ -191,21 +192,28 @@
     result.innerHTML = `
       <div class="bilidj-search-result-card">
         <strong>搜索：${escapeHtml(parsed.keyword)}</strong>
-        <p>我已经帮你准备好 B站搜索。点下面按钮，在新页面里找到喜欢的伴奏，复制它的 BV号或链接，再回到这里粘贴。</p>
+        <p>我已经帮你准备好 B站搜索。点下面按钮，在新页面里找到喜欢的伴奏，复制它的网址，再回到这里粘贴。</p>
         <a href="${parsed.url}" target="_blank" rel="noreferrer">去 B站搜索伴奏</a>
       </div>
     `;
   }
 
-  async function loadBeat(root, state, bvid, title) {
+  function renderSavedBeat(root, state, bvid, title) {
     const slot = root.querySelector('[data-role="beat-slot"]');
-    slot.innerHTML = `<iframe class="bilidj-beat-frame" src="${globalThis.BiliDJBeat.embedUrlFromBvid(bvid)}" allow="fullscreen; autoplay; encrypted-media" allowfullscreen></iframe>`;
+    const embedUrl = globalThis.BiliDJBeat.embedUrlFromBvid(bvid);
+    if (!embedUrl) return;
+    slot.innerHTML = `<iframe class="bilidj-beat-frame" src="${embedUrl}" allow="fullscreen; autoplay; encrypted-media" allowfullscreen></iframe>`;
+    state.settings.beatTitle = title;
+  }
+
+  async function loadBeat(root, state, bvid, title) {
+    renderSavedBeat(root, state, bvid, title);
     state.settings.beatUrl = `https://www.bilibili.com/video/${bvid}`;
     state.settings.beatTitle = title;
     await globalThis.BiliDJStorage.saveSettings(state.settings);
     render(root, state);
     state.actions.pulseTrack('R');
-    state.actions.toast(`右轨已加载 ${title}`);
+    state.actions.toast(`右边伴奏已放好：${title}`);
   }
 
   function saveCueFromForm(root, state) {
@@ -228,7 +236,7 @@
     else state.settings.cues.push(cue);
     await globalThis.BiliDJStorage.saveSettings(state.settings);
     render(root, state);
-    state.actions.toast(`已保存：按 ${cue.key} 跳到${cue.track === 'L' ? '左边视频' : '右边伴奏'} ${cue.time}s`);
+    state.actions.toast(`已保存：按 ${cue.key} 跳到左边视频 ${cue.time}s`);
   }
 
   async function deleteCue(root, state, key) {
@@ -244,7 +252,7 @@
     renderCues(root, state);
     if (state.settings.beatUrl && !root.querySelector('.bilidj-beat-frame')) {
       const bvid = globalThis.BiliDJPlatform.getVideoIdFromUrl(state.settings.beatUrl);
-      if (bvid) loadBeat(root, state, bvid, state.settings.beatTitle || bvid);
+      if (bvid) renderSavedBeat(root, state, bvid, state.settings.beatTitle || bvid);
     }
   }
 
@@ -256,7 +264,7 @@
       row.className = 'bilidj-cue-row';
       row.innerHTML = `
         <span class="bilidj-key">${escapeHtml(cue.key)}</span>
-        <span><strong>${escapeHtml(cue.label)}</strong><small>${cue.track === 'L' ? '左边视频' : '右边伴奏'} / 跳到 ${cue.time}s</small></span>
+        <span><strong>${escapeHtml(cue.label)}</strong><small>左边视频 / 跳到 ${cue.time}s</small></span>
         <button type="button" data-jump="${escapeHtml(cue.key)}">试一下</button>
         <button type="button" data-delete="${escapeHtml(cue.key)}">删除</button>
       `;

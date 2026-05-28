@@ -14,11 +14,9 @@ BiliDJ 只在 `https://www.bilibili.com/video/*` 视频页运行内容脚本。
 
 ## 网络访问
 
-插件不会自建后端，也不会向第三方服务器上传用户数据。用户点击搜索时，会打开 Bilibili 搜索结果页面；用户粘贴 BV 或链接后，右轨使用 Bilibili 官方播放器嵌入页面展示视频。
+插件不会自建后端，也不会向第三方服务器上传用户数据。用户点击搜索时，会打开 Bilibili 搜索结果页面；用户粘贴伴奏视频网址或 BV 号后，右边使用 Bilibili 官方播放器嵌入页面展示视频。
 
 ## 权限用途
 
 - `storage`：保存一键跳转快捷键和伴奏设置。
-- `https://www.bilibili.com/*`：在 B站视频页注入简单混音助手。
-- `https://search.bilibili.com/*`：打开 B站搜索入口。
-- `https://player.bilibili.com/*`：显示右边 B站嵌入播放器。
+- `https://www.bilibili.com/video/*`：只在 B站视频页注入简单混音助手。
