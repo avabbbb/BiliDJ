@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "package": "node scripts/package-extension.js",
+    "check": "node --check src/content/storage.js && node --check src/content/bilibili.js && node --check src/content/beat.js && node --check src/content/ui.js && node --check src/content/hotkeys.js && node --check src/content/main.js"
+  }
+}
