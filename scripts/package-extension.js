@@ -7,10 +7,11 @@ const dist = path.join(root, 'dist');
 const packageDir = path.join(dist, 'bilidj-extension');
 const zipPath = path.join(dist, 'bilidj-extension.zip');
 
+// Keep the store package runtime-only. Product/history/agent docs stay in the
+// repository and must not become duplicate sources of truth under dist/.
 const entries = [
   'manifest.json',
   'PRIVACY.md',
-  'DESIGN.md',
   'assets/icon-16.png',
   'assets/icon-32.png',
   'assets/icon-48.png',
